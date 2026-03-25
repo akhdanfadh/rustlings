@@ -9,29 +9,40 @@ fn string(arg: String) {
     println!("{arg}");
 }
 
+// here is a rule by claude:
+// - string literals are always &str; 1
+// - &Something or slicing gives us &str; 7
+// - methods that trim/scan without transforming return a view; 8
+// - anything that constructs or converts gives us String; the rest
+// basically:
+//   if the result can point back into existing memory without copying, it's &str.
+//   if it needs its own heap allocation, it's String.
+// question yourself:
+//   does the expression produced an owned value (thus String) or a borrowed view (thus &str)?
+
 // TODO: Here are a bunch of values - some are `String`, some are `&str`.
 // Your task is to replace `placeholder(…)` with either `string_slice(…)`
 // or `string(…)` depending on what you think each value is.
 fn main() {
-    placeholder("blue");
+    string_slice("blue"); // 1; &'static str, baked into the binary
 
-    placeholder("red".to_string());
+    string("red".to_string()); // 2; explicit conversion
 
-    placeholder(String::from("hi"));
+    string(String::from("hi")); // 3; constructor
 
-    placeholder("rust is fun!".to_owned());
+    string("rust is fun!".to_owned()); // 4; "give me an owned copy"
 
-    placeholder("nice weather".into());
+    string("nice weather".into()); // 5; type-inferred conversion
 
-    placeholder(format!("Interpolation {}", "Station"));
+    string(format!("Interpolation {}", "Station")); // 6; builds a new String at runtime
 
     // WARNING: This is byte indexing, not character indexing.
     // Character indexing can be done using `s.chars().nth(INDEX)`.
-    placeholder(&String::from("abc")[0..1]);
+    string_slice(&String::from("abc")[0..1]); // 7; & + slice of a String
 
-    placeholder("  hello there ".trim());
+    string_slice("  hello there ".trim()); // 8; no new allocation, just adjusts the pointer/length
 
-    placeholder("Happy Monday!".replace("Mon", "Tues"));
+    string("Happy Monday!".replace("Mon", "Tues")); // 9; produces a new String
 
-    placeholder("mY sHiFt KeY iS sTiCkY".to_lowercase());
+    string("mY sHiFt KeY iS sTiCkY".to_lowercase()); // 10; produces a new String
 }
